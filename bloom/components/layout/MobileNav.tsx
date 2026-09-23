@@ -6,13 +6,14 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { useAuthToken } from "@/lib/useAuthToken";
+import PwaInstallButton from "../pwa/PwaInstallButton";
 
 const baseLinks = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/calendar", label: "Calendar" },
-  { href: "/symptoms", label: "Symptoms" },
-  { href: "/chat", label: "Bloom Guide" },
-  { href: "/insights", label: "Insights" },
+  { href: "/dashboard", label: "Dashboard", icon: "🌸" },
+  { href: "/calendar", label: "Calendar", icon: "📅" },
+  { href: "/symptoms", label: "Symptoms & Vibe", icon: "✨" },
+  { href: "/chat", label: "Bloom AI Guide", icon: "💬" },
+  { href: "/insights", label: "Insights & Charts", icon: "📈" },
 ];
 
 export default function MobileNav() {
@@ -32,98 +33,119 @@ export default function MobileNav() {
   });
 
   const showInsights = (cyclesQuery.data?.length ?? 0) >= 2;
-  const links = baseLinks;
 
   return (
     <div className="md:hidden">
       <div
-        className="flex items-center justify-between rounded-3xl px-4 py-3 shadow-lg shadow-pink-100 backdrop-blur"
+        className="flex items-center justify-between rounded-3xl px-4 py-3 glass-card shadow-md"
         style={{
-          backgroundColor: "color-mix(in srgb, var(--card) 92%, transparent)",
-          border: "1px solid var(--border)",
+          backgroundColor: "var(--card)",
+          borderColor: "var(--border)",
         }}
       >
-        <div>
-          <p className="text-xs uppercase tracking-[0.2em]" style={{ color: "var(--accent)" }}>
-            Bloom
-          </p>
-          <h2 className="font-display text-lg" style={{ color: "var(--foreground)" }}>
-            Menu
-          </h2>
+        <div className="flex items-center gap-2">
+          <span className="text-xl">🌸</span>
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.2em] font-black text-[#ff5277]">Bloom</p>
+            <h2 className="font-display text-base font-bold" style={{ color: "var(--foreground)" }}>
+              Menu
+            </h2>
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          aria-label="Open menu"
-          className="rounded-full border p-2"
-          style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
-        >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path
-              d="M4 7h16M4 12h16M4 17h16"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </svg>
-        </button>
+        <div className="flex items-center gap-2">
+          <PwaInstallButton />
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            aria-label="Open menu"
+            className="rounded-full border p-2 cursor-pointer active:scale-95"
+            style={{ borderColor: "var(--border)", color: "var(--foreground)", backgroundColor: "color-mix(in srgb, var(--accent) 8%, var(--card))" }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M4 7h16M4 12h16M4 17h16"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {open ? (
-        <div className="fixed inset-0 z-50">
+        <div className="fixed inset-0 z-50 animate-pop">
           <button
             type="button"
-            className="absolute inset-0 bg-black/30"
+            className="absolute inset-0 bg-black/40 backdrop-blur-xs"
             onClick={() => setOpen(false)}
           />
           <div
-            className="absolute right-0 top-0 h-full w-72 p-6 shadow-2xl"
+            className="absolute right-0 top-0 h-full w-72 p-6 shadow-2xl glass-card flex flex-col justify-between"
             style={{ backgroundColor: "var(--card)" }}
           >
-            <div className="flex items-center justify-between">
-              <h3 className="font-display text-xl" style={{ color: "var(--foreground)" }}>
-                Bloom
-              </h3>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="rounded-full border px-3 py-1 text-sm font-semibold"
-                style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
-              >
-                Close
-              </button>
+            <div>
+              <div className="flex items-center justify-between pb-4 border-b" style={{ borderColor: "var(--border)" }}>
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">🌸</span>
+                  <h3 className="font-display text-xl font-bold text-[#ff5277]">
+                    Bloom
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="rounded-full border px-3 py-1 text-xs font-bold"
+                  style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
+                >
+                  ✕ Close
+                </button>
+              </div>
+              <nav className="mt-6 flex flex-col gap-2.5">
+                {baseLinks.map((link) => {
+                  const isActive = pathname === link.href;
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setOpen(false)}
+                      className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-bold transition-all ${
+                        isActive
+                          ? "scale-102 shadow-md"
+                          : "opacity-85"
+                      }`}
+                      style={{
+                        backgroundColor: isActive
+                          ? "color-mix(in srgb, var(--accent) 15%, var(--card))"
+                          : "color-mix(in srgb, var(--accent) 5%, var(--card))",
+                        color: isActive ? "var(--accent)" : "var(--foreground)",
+                        borderColor: isActive ? "var(--accent)" : "transparent",
+                      }}
+                    >
+                      <span className="text-lg">{link.icon}</span>
+                      <span>{link.label}</span>
+                      {!showInsights && link.href === "/insights" ? (
+                        <span className="ml-auto text-[10px] font-normal" style={{ color: "var(--muted)" }}>
+                          (2+ cycles)
+                        </span>
+                      ) : null}
+                    </Link>
+                  );
+                })}
+              </nav>
             </div>
-            <nav className="mt-6 flex flex-col gap-3">
-              {links.map((link) => {
-                const isActive = pathname === link.href;
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setOpen(false)}
-                    className={`rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
-                      isActive
-                        ? "border-[#ef7a9a] text-[#5a2d4b]"
-                        : "border-transparent hover:border-[#f0d6df]"
-                    }`}
-                    style={{
-                      backgroundColor: isActive
-                        ? "color-mix(in srgb, var(--accent) 12%, var(--card) 88%)"
-                        : "var(--card)",
-                      color: "var(--foreground)",
-                      borderColor: isActive ? "var(--accent)" : "transparent",
-                    }}
-                  >
-                    {link.label}
-                    {!showInsights && link.href === "/insights" ? (
-                      <span className="ml-2 text-xs font-normal" style={{ color: "var(--muted)" }}>
-                        (add 2 cycles)
-                      </span>
-                    ) : null}
-                  </Link>
-                );
-              })}
-            </nav>
+
+            <div
+              className="rounded-2xl p-4 text-xs border"
+              style={{
+                borderColor: "var(--border)",
+                backgroundColor: "color-mix(in srgb, var(--accent) 8%, var(--card))",
+                color: "var(--foreground)",
+              }}
+            >
+              <p className="font-bold text-[#ff5277]">💖 Bloom Monolith</p>
+              <p className="mt-1" style={{ color: "var(--muted)" }}>Gentle cycle tracking and supportive AI companion.</p>
+            </div>
           </div>
         </div>
       ) : null}

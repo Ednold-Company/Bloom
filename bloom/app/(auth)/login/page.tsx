@@ -12,26 +12,50 @@ type LoginForm = { email: string; password: string };
 export default function LoginPage() {
   const { register, handleSubmit } = useForm<LoginForm>();
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isAnonLoading, setIsAnonLoading] = useState(false);
 
   const onSubmit = async (values: LoginForm) => {
     setError(null);
-    const result = await signIn("credentials", {
-      email: values.email,
-      password: values.password,
-      callbackUrl: "/dashboard",
-      redirect: true,
-    });
+    setIsLoading(true);
+    try {
+      const result = await signIn("credentials", {
+        email: values.email,
+        password: values.password,
+        callbackUrl: "/dashboard",
+        redirect: false,
+      });
 
-    if (result?.error) {
-      setError("Invalid credentials. Please try again.");
+      if (result?.error) {
+        setError("Invalid credentials. Please try again.");
+      } else if (result?.ok) {
+        window.location.href = "/dashboard";
+      }
+    } catch (err: any) {
+      setError(err?.message || "Failed to sign in. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleAnonymous = async () => {
     setError(null);
-    const response = await api.post("/auth/anonymous");
-    localStorage.setItem("bloom_anon_token", response.data.token);
-    window.location.href = "/dashboard";
+    setIsAnonLoading(true);
+    try {
+      const response = await api.post("/auth/anonymous");
+      if (response.data?.token) {
+        localStorage.setItem("bloom_anon_token", response.data.token);
+        window.location.href = "/dashboard";
+      } else {
+        setError("Failed to create anonymous session. Please try again.");
+      }
+    } catch (err: any) {
+      console.error("Anonymous login error:", err);
+      const serverMsg = err?.response?.data?.error;
+      setError(serverMsg || "Unable to connect to the server. Please check that the server is running and try again.");
+    } finally {
+      setIsAnonLoading(false);
+    }
   };
 
   return (
@@ -70,18 +94,20 @@ export default function LoginPage() {
           {error ? <p className="text-sm text-red-500">{error}</p> : null}
           <button
             type="submit"
-            className="w-full rounded-2xl px-4 py-3 text-sm font-semibold text-white"
+            disabled={isLoading || isAnonLoading}
+            className="w-full rounded-2xl px-4 py-3 text-sm font-semibold text-white transition disabled:opacity-60"
             style={{ backgroundColor: "var(--accent)" }}
           >
-            Sign in
+            {isLoading ? "Signing in..." : "Sign in"}
           </button>
           <button
             type="button"
+            disabled={isLoading || isAnonLoading}
             onClick={handleAnonymous}
-            className="w-full rounded-2xl border px-4 py-3 text-sm font-semibold"
+            className="w-full rounded-2xl border px-4 py-3 text-sm font-semibold transition disabled:opacity-60"
             style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
           >
-            Continue anonymously
+            {isAnonLoading ? "Connecting anonymously..." : "Continue anonymously"}
           </button>
           <p className="text-sm" style={{ color: "var(--muted)" }}>
             New here?{" "}

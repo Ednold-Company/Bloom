@@ -24,7 +24,9 @@ export default function BloomChatbot() {
         });
         const logs = Array.isArray(response.data?.logs) ? response.data.logs : [];
         const messages = logs.map((log: any) =>
-          log.role === "USER" ? createClientMessage(log.message) : createChatBotMessage(log.message)
+          log.role === "USER"
+            ? (createClientMessage as any)(log.message)
+            : (createChatBotMessage as any)(log.message)
         );
         if (!cancelled) {
           setMessageHistory(messages.length ? messages : undefined);
@@ -50,7 +52,13 @@ export default function BloomChatbot() {
   const config = useMemo(() => createConfig(token), [token]);
 
   return (
-    <div className="rounded-3xl border border-[#f0d6df] bg-white/90 p-4 shadow-lg shadow-pink-100">
+    <div
+      className="rounded-3xl border p-3 md:p-5 glass-card shadow-lg transition-colors"
+      style={{
+        backgroundColor: "var(--card)",
+        borderColor: "var(--border)",
+      }}
+    >
       <Chatbot
         config={config}
         actionProvider={ActionProvider}

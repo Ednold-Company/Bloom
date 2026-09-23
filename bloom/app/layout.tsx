@@ -1,21 +1,27 @@
-import type { Metadata } from "next";
-import { Nunito, Playfair_Display } from "next/font/google";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Providers from "./providers";
-
-const nunito = Nunito({
-  variable: "--font-body",
-  subsets: ["latin"],
-});
-
-const playfair = Playfair_Display({
-  variable: "--font-display",
-  subsets: ["latin"],
-});
+import ServiceWorkerRegister from "@/components/pwa/ServiceWorkerRegister";
 
 export const metadata: Metadata = {
   title: "Bloom",
   description: "Cycle tracking, insights, and gentle predictions",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Bloom",
+  },
+  icons: {
+    icon: "/icon-192.svg",
+    apple: "/icon-192.svg",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#ef7a9a",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -25,10 +31,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${nunito.variable} ${playfair.variable} antialiased`}
-      >
-        <Providers>{children}</Providers>
+      <body className="antialiased">
+        <Providers>
+          <ServiceWorkerRegister />
+          {children}
+        </Providers>
       </body>
     </html>
   );

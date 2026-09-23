@@ -12,11 +12,23 @@ type SignupForm = { email: string; password: string };
 export default function SignupPage() {
   const { register, handleSubmit } = useForm<SignupForm>();
   const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const onSubmit = async (values: SignupForm) => {
     setMessage(null);
-    await api.post("/auth/register", values);
-    setMessage("Account created. Please sign in.");
+    setError(null);
+    setIsLoading(true);
+    try {
+      await api.post("/auth/register", values);
+      setMessage("Account created successfully! You can now sign in.");
+    } catch (err: any) {
+      console.error("Signup error:", err);
+      const serverMsg = err?.response?.data?.error;
+      setError(serverMsg || "Failed to create account. Please check your connection and try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -52,13 +64,15 @@ export default function SignupPage() {
             className="w-full rounded-2xl border px-4 py-3 text-sm"
             style={{ borderColor: "var(--border)", backgroundColor: "var(--card)", color: "var(--foreground)" }}
           />
-          {message ? <p className="text-sm" style={{ color: "var(--muted)" }}>{message}</p> : null}
+          {error ? <p className="text-sm text-red-500">{error}</p> : null}
+          {message ? <p className="text-sm text-emerald-600 dark:text-emerald-400">{message}</p> : null}
           <button
             type="submit"
-            className="w-full rounded-2xl px-4 py-3 text-sm font-semibold text-white"
+            disabled={isLoading}
+            className="w-full rounded-2xl px-4 py-3 text-sm font-semibold text-white transition disabled:opacity-60"
             style={{ backgroundColor: "var(--accent)" }}
           >
-            Create account
+            {isLoading ? "Creating account..." : "Create account"}
           </button>
           <p className="text-sm" style={{ color: "var(--muted)" }}>
             Already have an account?{" "}
